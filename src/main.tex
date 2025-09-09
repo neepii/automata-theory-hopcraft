@@ -1,0 +1,289 @@
+\documentclass[5pt]{article}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage[english, russian]{babel}
+
+\title{Automata Theory}
+\author{Samodurov Nikita}
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+\newtheorem{definition}{Определение}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Intro}
+
+Данный файл является набором заметок книги Хопкрафта и Аллмана `Automata Theory`.
+Единственным требованием от читателя является знания теории множеств.
+Если вы заметите ошибки, пожалуйста, сделайте Pull Request или напишите мне на st128193@spbu.student.ru
+
+\newpage
+\section{Automatas}
+\subsection{Strings}
+
+
+Символ -- абстрактный объект, который мы не будем определять. Алфавит - конечное множество символов.
+Строка -- конечная последовательность символов.
+$\epsilon$ -- пустой символ.
+Если $w$ -- строка, то |$w$| -- длина строка.
+
+\begin{enumerate}
+  \item $abcd$ - строка, состоящее из символов $a$, $b$, $c$, $d$.Префиксами этой строки являются $\epsilon$, $a$, $ab$, $abc$, $abcd$
+  \item $wv$ - строка, которая получилась путём \textit{конкатенации} cтрок $w$ и $v$
+  \item $|\epsilon| = 0$
+\end{enumerate}
+
+\subsection{DFA}
+
+\begin{definition}
+Детерминистичный конечный автомат (DFA) -- это упорядочная пятёрка
+$M = (Q, \Sigma, \delta ,q_0, F)$, где
+
+\begin{itemize}
+  \item $\Sigma$ -- алфавит
+  \item $Q$ -- конечное множество состояний
+  \item $q_0 \in Q$ -- начальное состояние
+  \item $F \subset Q$ -- множество допускающих состояний
+  \item $\delta: Q \times \Sigma \rightarrow Q$ -- фукнция перехода между состояними
+\end{itemize}
+\end{definition}
+
+Дельта-фукнция работает только с символами. Сделаем так, чтобы она работала со строками.
+Пусть $\Sigma^*$ -- множество строк из символов $\Sigma$.
+Определим $\hat{\delta}: Q \times \Sigma^* \rightarrow Q$, обладающая следующими свойствами:
+\begin{itemize}
+  \item $\hat{\delta}(q, \epsilon) = q$
+  \item $\hat{\delta}(q, wa) = \delta(\hat{\delta}(q, w), a)$
+\end{itemize}
+
+Рекурентное свойство задаёт, с какой стороны мы будет `обрабатывать` символы.
+Поскольку $\hat{\delta}(q, w) = \hat{\delta}(q, w\epsilon) = \delta(\hat{\delta}(q, \epsilon), w) = \delta(q, w)$,
+то дальше мы будем использовать $\delta$ вместо $\hat{\delta}$.
+
+Строка $x$ принимается $M$, если $\delta(q_0, x) \in F$.
+
+$L(M) = \{x \mid \delta(q_0, x) \in F\}$ -- язык, принимающийся $M$
+
+$R = L(M)$ язык какого-либо коненчого автомата M часто называют регулярным множеством
+
+\subsection{NFA}
+
+\begin{definition}
+Недетерминистичный конечный автомат (NFA) -- это упорядочная пятёрка
+$M = (Q, \Sigma, \delta ,q_0, F)$, где
+\begin{itemize}
+  \item $Q$, $\Sigma$, $q_0$, $F$ точно такие же, как у DFA
+  \item $\delta: Q \times \Sigma \rightarrow 2^Q$ - функция перехода состояний
+\end{itemize}
+\end{definition}
+
+Образ дельта-функция -- подмножество множества состояний, расматриваем все варианты `путей` из текущего состояния.
+
+Как и для NFA, определим дельту-функцию с `шапкой`.
+
+Пусть $\hat{\delta}: Q \times \Sigma^* \rightarrow 2^Q$ обладает следующими свойствами:
+\begin{itemize}
+  \item $\hat{\delta}(q, \epsilon) = \{q\}$
+  \item $\hat{\delta}(q, wa) = \{p \mid \exists r \in \hat{\delta}(q, w): p \in \delta(r,a)\}$
+\end{itemize}
+
+Получаем вновь $\hat{\delta}(q, a) = \delta(q, a)$
+
+Улучшим область определения до $2^Q \times \Sigma^*$ ещё новым свойством $\delta$:
+
+\begin{itemize}
+  \item $\forall P \subset Q$,  $ \delta(P, a) = \bigcup\limits_{q \in P}\delta(q, a)$
+\end{itemize}
+
+Определим $L(M) = \{ w \mid\ \delta(q_o, w) \cap F \neq \varnothing\}$
+
+\subsection{Equivalence}
+
+\begin{theorem}
+NFA $\Leftrightarrow$ DFA, т.е. если язык $L$ принимается NFA M, то $L$ принимается каким-то DFA M', и наоборот
+
+\end{theorem}
+\begin{proof}
+Для DFA $\Rightarrow$ NFA -- очевидно.
+
+Пусть $M = (Q, \Sigma, \delta ,q_0, F)$ -- NFA
+, тогда пусть $M' = (2^Q, \Sigma, \delta , \{q_0\}, F)$
+
+$M'$ трактует подмножества множества состояний как одно состояние $\Rightarrow$ $M'$ -- DFA.
+
+Покажем, что
+$$\delta(q_0, x) = \{p_1, p_2, ..., p_n\} \Leftrightarrow \delta(\{q_0\}, x) = \{p_1, p_2, ..., p_n\}$$
+
+База: $|x| = 0$ 
+$$\delta(q_0, \epsilon) = \bigcup\limits_{q \in \{q_0\}}\delta(q, \epsilon) = \delta(\{q_0\}, \epsilon) = \{q_0\}$$
+
+Индукция: $|x| = m \rightarrow m + 1$
+
+Пусть $a \in \Sigma$
+$$\delta(\{q_0\}, wa) = \delta(\delta(\{q_0\}, w), a)$$
+
+По индукционному предположению знаем, что
+$$\delta(q_0, x) = \{p_1, p_2, ..., p_n\} \Leftrightarrow \delta(\{q_0\}, x) = \{p_1, p_2, ..., p_n\}$$
+Тогда пусть
+$$\delta(\{p_1, p_2, ..., p_n\}, a) = \{r_1, r_2, ..., r_k \}$$
+Соответсвенно
+$$\delta(q_0, wa) = \delta(\{q_0\}, wa) = \{r_1, r_2, ..., r_k \}$$
+
+$\delta(q_0, x) \in F \Leftrightarrow \delta(\{q_0\}, x) \in F$
+$\Rightarrow L(M) = L(M')$
+\end{proof}
+
+\subsection{NFA with epsilon moves}
+
+\begin{definition}
+Недетерминистичный автомат с $\epsilon$-переходами ($\epsilon$-NFA) -- это $M = (Q, \Sigma, \delta ,q_0, F)$, где
+\begin{itemize}
+  \item $Q$, $\Sigma$, $q_0$, $F$ точно такие же, как у NFA
+  \item $\delta: Q \times (\Sigma \cup \{\epsilon\}) \rightarrow 2^Q$ - функция перехода состояний
+\end{itemize}
+
+\end{definition}
+
+Имеем переходы, которые не требует символа. 
+Здесь нужно ввести ещё одно определение, чтобы определенить дельту с `шапкой`.
+
+\begin{definition}
+$\epsilon$-замыкание - это отображение $\epsilon$-$CLOSURE: Q \rightarrow 2^q$, которая каждому состоянию будет соответсвовать набор состояний, достигаемые с помощью $\epsilon$-переходов.
+(включая сам аргумент)
+\end{definition}
+
+%%%% Example here
+
+Пусть $\forall P \subset Q$, $\epsilon$-$CLOSURE(P) = \bigcup\limits_{q \in P}\epsilon$-$CLOSURE(q)$
+
+Определим $\hat{\delta}$ как следует:
+\begin{itemize}
+  \item $\hat{\delta}(q, \epsilon) = \epsilon$-$CLOSURE(q)$
+  \item $\hat{\delta}(q, wa) = \epsilon$-$CLOSURE(P)$ , где
+ $P = \{ p \mid \exists r \in \hat{\delta}(q, w) : p \in \delta(r, a)\}$
+
+Расширим до множества состояний для первого аргумента
+  \item $\delta(R, a) = \bigcup\limits_{r \in R}\delta(r, a)$
+  \item $\hat{\delta}(R, w) = \bigcup\limits_{r \in R}\hat{\delta}(r, w)$
+\end{itemize}
+
+Если вы заметите, то тут $\delta \neq \hat{\delta}$. Дельта без `шапки` не учитывает $\epsilon$-переходы.
+
+$L(M) = \{w \mid \hat{\delta}(q_0,w) \cap F \neq \varnothing\}$
+\newpage
+\begin{theorem}
+$\epsilon$-NFA $\Rightarrow$ NFA
+\end{theorem}
+
+\begin{proof}
+  Пусть $M = (Q, \Sigma, \delta ,q_0, F)$ -- $\epsilon$-NFA
+  Тогда $M' = (Q, \Sigma, \delta',q_0, F')$, где
+\begin{itemize}
+\item F' =
+\begin{cases}                   
+
+  $F \cup \{q_0\} $ & \text{, если $\epsilon$-$CLOSURE(q_0)\cap F \neq \varnothing$ }\\
+  $F$ & \text{, иначе}
+
+\end{cases}
+
+\item $\forall a \in \Sigma, \delta'(q,a) = \hat{\delta}(q,a)$
+\end{itemize}
+ 
+Покажем, что  $\delta'(q,w) = \hat{\delta}(q,w) ,   w \in \Sigma^*$
+
+База: $|w| = 1$ следует из определения, которое мы дали
+
+Индукционный переход: $|w| = m \rightarrow m + 1$
+
+Пусть $P = \hat{\delta}(q, w) \Rightarrow P = \delta'(q, w)$
+
+$a \in \Sigma$
+
+\[
+ \delta'(P, a) = \bigcup\limits_{p \in P}\delta'(p, a) = \bigcup\limits_{p \in P}\hat{\delta}(p, a) = \hat{\delta}(P, a)
+\]
+
+$\Rightarrow \hat{\delta}(q, wa) = \delta'(q, wa) $
+
+
+Осталось доказать, что
+\[
+  \hat{\delta}(q, wa) \in F \Leftrightarrow \delta'(q, wa) \in F'
+\]
+\end{proof}
+
+\subsection{Regular Expression}
+
+\subsection{Pumping lemma}
+
+В этой главе появиться лемма, которая будет являться инструментом, которым можно \textit{опровергнуть}, что язык $L$ является регулярным
+
+Напомним, регулярное множество -- язык, который принимается каким-либо автоматом (DFA, NFA, $\epsilon$-NFA или регулярным выражением, все они эквиваленты по мощности)
+
+Pumping lemma доказывает свойство "замыкания" регулярных множеств, по аналогии с замыканиям алгебраических операторов в группах или кольцах.
+
+Она показывает, что если слово будет больше числа состояний автомата, то найдётся хотя бы одно состояний, по которому идём два или более раза, т.е. нашли цикл, по которому пройтись сколько хотим.
+
+\begin{lemma}[Pumping lemma]
+  Пусть $L$ - регулярное множество,
+
+  $\exists n \geq 0 : \forall z (z \in L \land |z| \geq n) 
+
+\Rightarrow
+  \exists u,v,w \in \Sigma^* : z = uvw, |uv| \leq n, |v| \geq 1$,
+
+  $\forall i \geq 0, uv^iw \in L$
+
+
+  $n$ не превышает количество состояний автомата
+\end{lemma}
+\begin{proof}
+  Пусть $L$ - регулярный множество, DFA $M = (Q, \Sigma, \delta ,q_0, F)$ принимает его 
+
+  Пусть $n = |Q|,$
+
+  $$z = a_1a_2...a_m \in L :  m \geq n$$
+
+  $$\forall i \in \{1, ..., m\}, \delta(q_0, a_1a_2...a_i) = q_i$$
+
+  Так как $m \geq n$, то из $q_0q_2...q_n \exists j < k : q_j = q_k$
+
+  Тогда пусть
+
+  $u = a_1...a_j$
+
+  $v = a_{j+1}...a_k$, заметим, что $|u| \geq 1$
+
+  $w = a_{k+1}...a_m$
+
+  Если $q_m \in F$ т.е. $uvw \in L \Rightarrow uw \in L$, т.к. $v$ является тем самым циклом
+
+  Объясним формально: \footnote{Тут нужно доказать, что $\forall x, y \in \Sigma^*, \delta(q, xy) = \delta(\delta(q, x), y)$}
+  \[
+    \begin{split}
+      \delta(q_0, uw) & = \delta(q_0, a_1...a_ja_{k+1}...a_m) \\
+      & = \delta(\delta(q_0, a_1...a_j),a_{k+1}...a_m) \\
+      & = \delta(q_j,a_{k+1}...a_m) \\
+      & = \delta(q_k,a_{k+1}...a_m) \\
+      & = q_m
+    \end{split}
+  \]
+
+  Поэтому 
+  $\delta(q_0, a_1...a_j(a_{j+1}...a_k)^ia_{k+1}...a_m),  \forall i \geq 0$
+
+\end{proof}
+
+С помощью леммы мы можем от противного доказывать нерегулярность языка
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: t
+%%% End:
+
