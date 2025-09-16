@@ -181,17 +181,15 @@ $\epsilon$-NFA $\Rightarrow$ NFA
 \begin{proof}
   Пусть $M = (Q, \Sigma, \delta ,q_0, F)$ -- $\epsilon$-NFA
   Тогда $M' = (Q, \Sigma, \delta',q_0, F')$, где
-\begin{itemize}
-\item F' =
+\[F' =
 \begin{cases}                   
 
-  $F \cup \{q_0\} $ & \text{, если $\epsilon$-$CLOSURE(q_0)\cap F \neq \varnothing$ }\\
-  $F$ & \text{, иначе}
+  F \cup \{q_0\}  &  \text{, если} \quad \epsilon$-$CLOSURE(q_0)\cap F \neq \varnothing\\
+  F & \text{, иначе}
 
-\end{cases}
+\end{cases}\]
+\[\forall a \in \Sigma, \delta'(q,a) = \hat{\delta}(q,a)\]
 
-\item $\forall a \in \Sigma, \delta'(q,a) = \hat{\delta}(q,a)$
-\end{itemize}
  
 Покажем, что  $\delta'(q,w) = \hat{\delta}(q,w) ,   w \in \Sigma^*$
 
@@ -251,10 +249,10 @@ Pumping lemma доказывает свойство "замыкания" рег�
 \begin{lemma}[Pumping lemma]
   Пусть $L$ - регулярное множество,
 
-  $\exists n \geq 0 : \forall z (z \in L \land |z| \geq n) 
+  $\exists n \geq 0 : \forall z (z \in L \land |z| \geq n) $
 
-\Rightarrow
-  \exists u,v,w \in \Sigma^* : z = uvw, |uv| \leq n, |v| \geq 1$,
+  $\Rightarrow$
+  $\exists u,v,w \in \Sigma^* : z = uvw, |uv| \leq n, |v| \geq 1$,
 
   $\forall i \geq 0, uv^iw \in L$
 
